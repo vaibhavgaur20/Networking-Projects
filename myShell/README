@@ -1,0 +1,144 @@
+Vaibhav Gaur, Vishvesh Trivedi
+vgaur22@ubishops.ca, vtrivedi22@ubishops.ca
+002344059, 002344012
+
+To start with :-
+There is a Makefile present for the shell.
+- To clean simply run 
+$ make clean 
+-To creat an output file of shell.c run 
+$ make shell.o
+- To create an executable file, run 
+$ make final
+- To create both shell.o and executable, run
+$ make all 
+- Lastly, to run the executable, run 
+$ ./final
+
+Description of the program:-
+Its a custom shell which uses commands like ls, cd , mkdir etc as 
+external commands and commands like more and exit as internal commands. Furthermore, search path for the external
+commands contains only the directories /bin, /usr/bin or absolute path. 
+
+So this shell starts by reading the value of VSIZE and HSIZE from a shconfig.txt file 
+and it creates one if it doesn't exists. Then the shell is ready to accept any external 
+command or internal command(i.e. more and exit). 
+
+Let's look deeper into what these external and internal commands mean.
+Here are few examples for external commands:-
+
+1. shell>>ls
+
+will print all the files present in /bin/ls 
+
+2. shell>> & ls
+   shell>>
+
+   prefixing any command with & will run that command in background and promt the shell again,
+   to accept the new command. Meanwhile the old command executes at the background and its 
+   output are shown as soon as the results are ready.
+
+Now, lets's look at some examples of internal commands:-
+
+1. shell>> more sample.txt
+
+    This command will print out VSIZE lines and HSIZE characters from the file sample.txt and 
+    once the VSIZE lines are shown it waits for the user to either press enter to show other VSIZE lines
+    or to enter any other key to hault the command and return to  the shell.
+
+2. shell>> exit
+    As the name itself suggest, this command is used to exit the shell.
+
+Documentation:-
+
+1. int main()  
+
+    main function act as a controller which first calls shconfigFile() and holds the value of VSIZE and HSIZE. Then, it runs the shell and waits for the user input and then some conditional arguments (like if and else) are used in order to call differnt functions as per the command. 
+    If the command is prefixed with &, runInBackground(Flag) will be assigned value 1 and a thread will be created in order to run that command in background. Meanwhile, the shell is still avilable for new commands.
+
+2. void shconfigFile(int *vsize, int *hsize)
+    
+    Accepts two pointers of integer type. 
+    It starts by assigning default values for VSIZE = 40 and HSIZE = 75 and checking whether or not the shconfig file exists, if it doesn't it creates one or else it read the value of VSIZE and HSIZE from the file if the value exists otherwise it appends the value of VSIZE and HSIZE.
+
+3. void internal(char* filename,int *vsize, int *hsize)
+    
+    Accepts 3 arguments first being the file location and rest being VSIZE and HSIZE 
+    It reads and displays the contents of a text file, allowing the user to view the file content in segments. 
+
+    A while loop is declared which is true until fgets() is not equal to NULL. Inside this while loop we trim each line based on HSIZE characters, and lines_displayed is incremented in everyloop to only display VSIZE lines. Once the VSIZE lines are displayed, command waits for user to enter to display the remaining or to enter any key to hault the program.
+
+4. void *executeCommand(void *command)
+
+    This function takes a single argument, which is a pointer to void. This pointer is intended to be a dynamically allocated character array (string) containing the system command to execute.
+    This function is intended to run a system command provided as input in a separate thread.
+
+    The void *command input is typecast to a char * pointer named cmd. This typecasting is done because the input argument is a generic pointer (void *), and the function needs to treat it as a character array.
+    Later, there is a condition to check whether the command was completed successfully or not. Lastly, dynamically allocated memory for the command is freed.
+
+
+
+
+Test Cases:
+
+Case 1: 
+
+Input => shell>>ls
+Result => This will execute ls command and print the list of files and directories in the current directory
+
+Case 2:
+
+Input => shell>>which pwd 
+Output => /bin/pwd
+
+Case 3:
+
+Input => shell>>/bin/pwd
+Result => tells us where we currently are.
+
+Case 4:
+
+Input => test
+Result => It throws an error, As the absolute path is not provided
+
+
+
+Case 5: 
+
+Input => shell>>xyz123
+Output => sh: xyz123: command not found
+         Command 'xyz123' failed with error code 32512.
+
+Result => It prints an error message indicating that the command failed.
+
+Case 6:
+
+Input => shell>>& echo "Background command"
+Result => This will create a background thread to execute the "echo" command and print "Background command" after sleeping for 10 seconds.
+
+Case 7:
+
+Input => shell>>more sample.txt
+Result => This will attempt to open and read the "sample.txt" file and display its content in a paginated manner. It would prompt the user to press Enter to see more or any other key to exit.
+
+Case 8:
+
+Input => shell>>more xyz.txt
+Result => It will print an error message indicating that the file cannot be opened.
+
+Case 9:
+
+Set configuration values from shconfig.txt to VSIZE = 50 and HSIZE 100 
+
+Result => This should read the configuration values from shconfig.txt and the variables vsize and hsize will be set to 50 and 100, respectively.
+
+Case 10:
+
+Let's assume the shconfig file doesn't exists
+
+Result => The code will create 'shconfig.txt' with default configuration values("VSIZE 40" and "HSIZE 75")
+
+Case 11:
+
+Input => exit
+Result => The shell will terminate
